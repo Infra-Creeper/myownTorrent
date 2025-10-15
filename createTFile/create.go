@@ -2,6 +2,7 @@ package createTFile
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -13,7 +14,7 @@ type TFile struct {
 	pieces int
 }
 
-const pieceSize int = 64
+const pieceSize int = 128
 
 func CreateTorrent(fileName string) error {
 	fobj, ferr := os.Open(fileName)
@@ -21,6 +22,12 @@ func CreateTorrent(fileName string) error {
 	defer fobj.Close()
 	if ferr != nil {
 		return ferr
+	}
+	dir, fileLoc := getFolderString(fileName)
+
+	dirErr := os.Mkdir(dir, 0755)
+	if dirErr != nil {
+		return dirErr
 	}
 
 	pieceBuf := make([]byte, pieceSize)
@@ -32,10 +39,11 @@ func CreateTorrent(fileName string) error {
 		if err != nil {
 			return err
 		}
-		createPiece(pieceBuf, metadata.pieces, fileName)
+		createPiece(pieceBuf, metadata.pieces, fileLoc)
 		metadata.length += n
 		metadata.pieces++
 	}
+	fmt.Printf("%v", metadata)
 	return nil
 }
 
