@@ -1,6 +1,9 @@
 package createTFile
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -9,16 +12,18 @@ import (
 )
 
 type TFile struct {
-	name   string
-	length int
-	pieces int
+	Name   string   `json:"name"`
+	Length int      `json:"length"`
+	Pieces int      `json:"pieces"`
+	Hashes []string `json:"hashes"`
 }
 
-const pieceSize int = 128
+const pieceSize int = 512
 
 func CreateTorrent(fileName string) error {
 	fobj, ferr := os.Open(fileName)
-	metadata := TFile{fileName, 0, 0}
+	var metadata TFile
+	metadata.Name = fileName
 	defer fobj.Close()
 	if ferr != nil {
 		return ferr
@@ -39,11 +44,19 @@ func CreateTorrent(fileName string) error {
 		if err != nil {
 			return err
 		}
-		createPiece(pieceBuf, metadata.pieces, fileLoc)
-		metadata.length += n
-		metadata.pieces++
+		createPiece(pieceBuf, metadata.Pieces, fileLoc)
+		hashBytes := sha1.Sum(pieceBuf)
+		var hashStr string = hex.EncodeToString(hashBytes[:])
+
+		metadata.Length += n
+		metadata.Pieces++
+		metadata.Hashes = append(metadata.Hashes, hashStr)
 	}
-	fmt.Printf("%v", metadata)
+	fmt.Printf("%v\n", metadata)
+	metaErr := createMeta(metadata)
+	if metaErr != nil {
+		return metaErr
+	}
 	return nil
 }
 
@@ -52,6 +65,22 @@ func createPiece(data []byte, pid int, filename string) error {
 	err := os.WriteFile(binName, data, 0644)
 	if err != nil {
 		return errors.New("ERROR: Unable to create piece")
+	}
+
+	return nil
+}
+
+func createMeta(tfile TFile) error {
+	// Marshal struct to JSON (pretty print)
+	data, err := json.MarshalIndent(tfile, "", "  ")
+	if err != nil {
+		return fmt.Errorf("error encoding struct: %v", err)
+	}
+	var filename string = getTorrentFileName(tfile.Name)
+
+	err = os.WriteFile(filename, data, 0644)
+	if err != nil {
+		return fmt.Errorf("error writing file: %v", err)
 	}
 
 	return nil

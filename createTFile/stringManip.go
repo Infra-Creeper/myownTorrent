@@ -10,3 +10,6 @@ func getFolderString(fname string) (string, string) {
 
 	return dirname, filepath.Join(dirname, fname)
 }
+func getTorrentFileName(fname string) string {
+	return fmt.Sprintf("%s.TRRNTjson", fname)
+}

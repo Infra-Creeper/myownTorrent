@@ -1,0 +1,2 @@
+ tracker with its peer recommendations.
+When the client has all the pieces, the torrent client assembles them into a usable form. They may also continue sharing the pieces, elevating their status to that of seeder rather than an ordinary peer.  the torrent file, and/or achieves a similar result through the use of distributed hash tables. Then the client connects directly to the peers in order to request pieces and otherwise participate in a swarm. The client may also report progress to trackers, to help the

@@ -1,0 +1,2 @@
+twork "peer-to-peer", among themselves.
+Each file to be distributed is divided into small information chunks called pieces. Downloading peers achieve high download speeds by requesting multiple pieces from different computers simultaneously in the swarm. Once obtained, these pieces are usually immediately made available for download by others in the swarm. In this way, the burden on the network is spread among the downloaders, rather than concentrating at a central distribution hub or cluster. As long as al
