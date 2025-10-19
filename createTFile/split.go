@@ -18,7 +18,7 @@ type TFile struct {
 	Hashes []string `json:"hashes"`
 }
 
-const pieceSize int = 512
+const pieceSize int = 16000
 
 // creates the torrent file of the given filename
 func CreateTorrent(fileName string) error {
@@ -45,8 +45,8 @@ func CreateTorrent(fileName string) error {
 		if err != nil {
 			return err
 		}
-		createPiece(pieceBuf, metadata.Pieces, fileLoc)
-		hashBytes := sha1.Sum(pieceBuf)
+		createPiece(pieceBuf[:n], metadata.Pieces, fileLoc)
+		hashBytes := sha1.Sum(pieceBuf[:n])
 		var hashStr string = hex.EncodeToString(hashBytes[:])
 
 		metadata.Length += n

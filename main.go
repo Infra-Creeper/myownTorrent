@@ -8,13 +8,13 @@ import (
 )
 
 func main() {
-	fname := "shorttext.txt"
+	fname := "istockphoto.jpg"
 	ipAddr, ipErr := GetLocalIP()
 	if ipErr != nil {
 		fmt.Println("ERROR GETTING IP", ipErr)
 	}
 	fmt.Println("IP Address of the system: ", ipAddr)
-	err := createTFile.JoinTorrentPieces(fname+".TRRNTjson", "shortout.txt")
+	err := createTFile.JoinTorrentPieces(fname+".TRRNTjson", "stock2.jpg")
 	//err := createTFile.CreateTorrent(fname)
 	if err != nil {
 		fmt.Println("ERROR:", err)
