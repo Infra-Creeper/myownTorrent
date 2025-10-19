@@ -1,4 +1,4 @@
-package createTFile
+package manageTFile
 
 import (
 	"encoding/json"

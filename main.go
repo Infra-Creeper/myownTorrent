@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"myownTorrent/createTFile"
+	"myownTorrent/manageTFile"
 	"net"
 )
 
@@ -14,8 +14,8 @@ func main() {
 		fmt.Println("ERROR GETTING IP", ipErr)
 	}
 	fmt.Println("IP Address of the system: ", ipAddr)
-	err := createTFile.JoinTorrentPieces(fname+".TRRNTjson", "stock2.jpg")
-	//err := createTFile.CreateTorrent(fname)
+	err := manageTFile.JoinTorrentPieces(fname+".TRRNTjson", "stock2.jpg")
+	//err := manageTFile.CreateTorrent(fname)
 	if err != nil {
 		fmt.Println("ERROR:", err)
 	} else {
