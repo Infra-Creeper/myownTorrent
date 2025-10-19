@@ -20,6 +20,7 @@ type TFile struct {
 
 const pieceSize int = 512
 
+// creates the torrent file of the given filename
 func CreateTorrent(fileName string) error {
 	fobj, ferr := os.Open(fileName)
 	var metadata TFile
@@ -52,7 +53,7 @@ func CreateTorrent(fileName string) error {
 		metadata.Pieces++
 		metadata.Hashes = append(metadata.Hashes, hashStr)
 	}
-	fmt.Printf("%v\n", metadata)
+	//fmt.Printf("%v\n", metadata)
 	metaErr := createMeta(metadata)
 	if metaErr != nil {
 		return metaErr
@@ -60,6 +61,7 @@ func CreateTorrent(fileName string) error {
 	return nil
 }
 
+// creates a piece from the data and file name
 func createPiece(data []byte, pid int, filename string) error {
 	var binName string = filename + "_x_" + strconv.Itoa(pid) + ".bin"
 	err := os.WriteFile(binName, data, 0644)
@@ -70,6 +72,7 @@ func createPiece(data []byte, pid int, filename string) error {
 	return nil
 }
 
+// creates JSON meta data of the struct
 func createMeta(tfile TFile) error {
 	// Marshal struct to JSON (pretty print)
 	data, err := json.MarshalIndent(tfile, "", "  ")

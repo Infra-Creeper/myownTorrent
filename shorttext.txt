@@ -1,4 +1,45 @@
-Typically, Internet access is asymmetrical, supporting greater download speeds than upload speeds, limiting the bandwidth of each download, and sometimes enforcing bandwidth caps and periods where systems are not accessible. This creates inefficiency when many people want to obtain the same set of files from a single source; the source must always be online and must have massive outbound bandwidth. The torrent protocol addresses this by decentralizing the distribution, leveraging the ability of people to network "peer-to-peer", among themselves.
-Each file to be distributed is divided into small information chunks called pieces. Downloading peers achieve high download speeds by requesting multiple pieces from different computers simultaneously in the swarm. Once obtained, these pieces are usually immediately made available for download by others in the swarm. In this way, the burden on the network is spread among the downloaders, rather than concentrating at a central distribution hub or cluster. As long as all the pieces are available, peers (downloaders and uploaders) can come and go; no one peer needs to have all the chunks or to even stay connected to the swarm in order for distribution to continue among the other peers.
-A small torrent file is created to represent a file or folder to be shared. The torrent file acts as the key to initiating downloading of the actual content. Someone interested in receiving the shared file or folder first obtains the corresponding torrent file, either by directly downloading it or by using a magnet link. The user then opens that file in a torrent client, which automates the rest of the process. In order to learn the internet locations of peers who may be sharing pieces, the client connects to the trackers named in the torrent file, and/or achieves a similar result through the use of distributed hash tables. Then the client connects directly to the peers in order to request pieces and otherwise participate in a swarm. The client may also report progress to trackers, to help the tracker with its peer recommendations.
-When the client has all the pieces, the torrent client assembles them into a usable form. They may also continue sharing the pieces, elevating their status to that of seeder rather than an ordinary peer. 
+A file is basically a container that contains data. A text file is a very important and simplest
+kind of file. Text file is used to store data in textual format.
+What is a Text File?
+
+A text file is a file that contains data in the form of text. This is used to store and share
+textual data and is useful for human and software systems. A text file generally uses a simple
+character encoding such as UTF-8 and ASCII. text is a collection of alphanumerical characters.
+
+A text file is non-executable. A text file can be identified by a vivid kind of extension
+associated with its types such as .txt, .csv, .html, .xml, .py, .log, etc. In some programming
+issues codes of various software are written in form text files before execution. For example,
+before making a web page its code needs to be created in the form of a text file of a .html
+extension.
+Types of Text File
+
+
+There are many types of text file as follows:
+
+1. Plain Text File
+
+This is a type where there is no special formatting of text such as italic, bold, heading,
+subheading etc. In Microsoft OS Notepad is used to create plain text file. In Microsoft OS These
+files are saved with the .txt extension.
+2. Comma Separated File
+
+This file remains in .csv extension. This file is used to contain tabular data. Each line
+represents a record, and fields within each record are separated by commas.
+3. HTML File
+
+HTML file is used to create websites and web applications. This is saved with .html extension. In
+this file all textual data is contained in Hyper Text Markup Language.
+4. Doc and Docx file
+
+This type of file is created by MS word in Microsoft OS. In this kind of file Text can be stored in
+a proper format. Heading, footer can be added. and bold, italic and various types of fonts can be
+used in writing.
+5. Markdown File
+
+In this type of file text is written through Markdown language. This type of file is used to create
+proper documentation. This file uses .md extension.
+6. Programming language Source code File
+
+Text file is also used write programming code of various languages such as python, JavaScript, C
+etc. This file can be saved in various extension according to the programming language such as .py
+for python, .js for javascript etc. 
