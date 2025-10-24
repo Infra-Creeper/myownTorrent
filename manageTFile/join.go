@@ -34,7 +34,7 @@ func JoinTorrentPieces(torrentfilename string, saveAs string) error {
 		fmt.Println("ERROR: Unable to write file")
 		return err
 	}
-	fmt.Println("File Created sucessfully!")
+	fmt.Println("File Joined sucessfully as", writeName)
 	return nil
 }
 

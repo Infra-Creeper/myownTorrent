@@ -10,53 +10,42 @@ import (
 )
 
 func main() {
-	//hostCmd := flag.NewFlagSet("host", flag.ExitOnError)
-	fileCmd := flag.NewFlagSet("file", flag.ExitOnError)
+	//netCmd := flag.NewFlagSet("net", flag.ExitOnError)
+	joinCmd := flag.NewFlagSet("join", flag.ExitOnError)
+	splitCmd := flag.NewFlagSet("split", flag.ExitOnError)
 
 	// Flags for file subcommand
-	filename := fileCmd.String("f", "", "Input filename (required)")
-	outfile := fileCmd.String("o", *filename, "Output file name")
-	joinFlag := fileCmd.Bool("j", false, "Join torrent pieces")
-	splitFlag := fileCmd.Bool("s", false, "Create torrent/split file")
+	filename := splitCmd.String("f", "", "Input filename (required)")
+
+	tfile := joinCmd.String("t", "", "Name of Torrent file (required)")
+	outfile := joinCmd.String("o", "", "Output file name")
 
 	// Check if subcommand is provided
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: program <host|file> [options]")
+		fmt.Println("Usage: program <host|join|split> [options]")
 		os.Exit(1)
 	}
-	if os.Args[1] == "host" {
+	if os.Args[1] == "net" {
 		ipAddr, ipErr := GetLocalIP()
 		if ipErr != nil {
 			panic(ipErr)
 		}
 		fmt.Println("Hosting at", ipAddr)
-	} else if os.Args[1] == "file" {
-		fileCmd.Parse(os.Args[2:])
-		if *filename == "" {
-			fmt.Println("Error: -f flag (filename) is required")
-			fileCmd.PrintDefaults()
-			os.Exit(1)
-		}
-		if *joinFlag && *splitFlag {
-			fmt.Println("ERROR:Both join and split flags are passed")
-			os.Exit(1)
-		}
-		if *joinFlag {
-			err := manageTFile.JoinTorrentPieces(*filename, *outfile)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println("Files joined successfully as", *outfile)
-		} else if *splitFlag {
-			err := manageTFile.CreateTorrent(*filename)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Println("Torrent file and pieces created sucessfully")
-		} else {
-			fmt.Println("No split/join flags passed")
+	} else if os.Args[1] == "join" {
+		joinCmd.Parse(os.Args[2:])
+		err := manageTFile.JoinTorrentPieces(*tfile, *outfile)
+		if err != nil {
+			println("LOG: tfile=", *tfile, "outfile=", *outfile)
+			panic(err)
 		}
 
+	} else if os.Args[1] == "split" {
+		splitCmd.Parse(os.Args[2:])
+		err := manageTFile.CreateTorrent(*filename)
+		if err != nil {
+			println("LOG: filename=", *filename)
+			panic(err)
+		}
 	} else {
 		fmt.Println("Invalid Arguments passed")
 	}

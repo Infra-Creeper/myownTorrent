@@ -58,6 +58,7 @@ func CreateTorrent(fileName string) error {
 	if metaErr != nil {
 		return metaErr
 	}
+	fmt.Println("Files splitted into ", metadata.Pieces, "pieces successfully")
 	return nil
 }
 
