@@ -16,19 +16,24 @@ type TFile struct {
 	Length int      `json:"length"`
 	Pieces int      `json:"pieces"`
 	Hashes []string `json:"hashes"`
+	Origin string   `json:"origin"`
 }
 
 const pieceSize int = 32000
 
+var LocalAddr string
+
 // creates the torrent file of the given filename
 func CreateTorrent(fileName string) error {
 	fobj, ferr := os.Open(fileName)
-	var metadata TFile
-	metadata.Name = fileName
-	defer fobj.Close()
 	if ferr != nil {
 		return ferr
 	}
+	defer fobj.Close()
+	var metadata TFile
+	metadata.Name = fileName
+	metadata.Origin = LocalAddr
+
 	dir, fileLoc := getFolderString(fileName)
 
 	dirErr := os.Mkdir(dir, 0755)
