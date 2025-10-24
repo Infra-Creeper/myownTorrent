@@ -18,7 +18,7 @@ type TFile struct {
 	Hashes []string `json:"hashes"`
 }
 
-const pieceSize int = 16000
+const pieceSize int = 32000
 
 // creates the torrent file of the given filename
 func CreateTorrent(fileName string) error {

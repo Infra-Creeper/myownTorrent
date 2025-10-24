@@ -2,24 +2,63 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"myownTorrent/manageTFile"
 	"net"
+	"os"
 )
 
 func main() {
-	fname := "istockphoto.jpg"
-	ipAddr, ipErr := GetLocalIP()
-	if ipErr != nil {
-		fmt.Println("ERROR GETTING IP", ipErr)
+	//hostCmd := flag.NewFlagSet("host", flag.ExitOnError)
+	fileCmd := flag.NewFlagSet("file", flag.ExitOnError)
+
+	// Flags for file subcommand
+	filename := fileCmd.String("f", "", "Input filename (required)")
+	outfile := fileCmd.String("o", *filename, "Output file name")
+	joinFlag := fileCmd.Bool("j", false, "Join torrent pieces")
+	splitFlag := fileCmd.Bool("s", false, "Create torrent/split file")
+
+	// Check if subcommand is provided
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: program <host|file> [options]")
+		os.Exit(1)
 	}
-	fmt.Println("IP Address of the system: ", ipAddr)
-	err := manageTFile.JoinTorrentPieces(fname+".TRRNTjson", "stock2.jpg")
-	//err := manageTFile.CreateTorrent(fname)
-	if err != nil {
-		fmt.Println("ERROR:", err)
+	if os.Args[1] == "host" {
+		ipAddr, ipErr := GetLocalIP()
+		if ipErr != nil {
+			panic(ipErr)
+		}
+		fmt.Println("Hosting at", ipAddr)
+	} else if os.Args[1] == "file" {
+		fileCmd.Parse(os.Args[2:])
+		if *filename == "" {
+			fmt.Println("Error: -f flag (filename) is required")
+			fileCmd.PrintDefaults()
+			os.Exit(1)
+		}
+		if *joinFlag && *splitFlag {
+			fmt.Println("ERROR:Both join and split flags are passed")
+			os.Exit(1)
+		}
+		if *joinFlag {
+			err := manageTFile.JoinTorrentPieces(*filename, *outfile)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println("Files joined successfully as", *outfile)
+		} else if *splitFlag {
+			err := manageTFile.CreateTorrent(*filename)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println("Torrent file and pieces created sucessfully")
+		} else {
+			fmt.Println("No split/join flags passed")
+		}
+
 	} else {
-		fmt.Println("Files created succesfully")
+		fmt.Println("Invalid Arguments passed")
 	}
 }
 
@@ -68,4 +107,14 @@ func GetLocalIP() (string, error) {
 		return "", errors.New("could not determine local IP address")
 	}
 	return localAddr.IP.String(), nil
+}
+
+func isFlagPassed(name string) bool {
+	found := false
+	flag.VisitAll(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
 }
