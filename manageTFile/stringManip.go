@@ -19,7 +19,7 @@ func getTorrentFileName(fname string) string {
 }
 
 // returns the filename of the 'index'th bin file from the actual file name
-func getBinPiece(filename string, index int) string {
+func getBinPieceFileName(filename string, index int) string {
 	dir, _ := getFolderString(filename)
 	var out string = filepath.Join(dir, filename+"_x_"+strconv.Itoa(index)+".bin")
 	return out

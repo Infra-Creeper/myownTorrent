@@ -16,7 +16,7 @@ func JoinTorrentPieces(torrentfilename string, saveAs string) error {
 	fmt.Println("Joining", metadata.Name, "...")
 	var data []byte
 	for i := 0; i < metadata.Pieces; i++ {
-		bindata, err := os.ReadFile(getBinPiece(metadata.Name, i))
+		bindata, err := os.ReadFile(getBinPieceFileName(metadata.Name, i))
 		if err != nil {
 			fmt.Println("Error occured while joining piece indexed:", i)
 			return err
