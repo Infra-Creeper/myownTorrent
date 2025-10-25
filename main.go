@@ -9,6 +9,9 @@ import (
 )
 
 func main() {
+	ipAddr, ipErr := TorrentNet.GetLocalIP()
+	manageTFile.LocalAddr = ipAddr
+
 	//netCmd := flag.NewFlagSet("net", flag.ExitOnError)
 	joinCmd := flag.NewFlagSet("join", flag.ExitOnError)
 	splitCmd := flag.NewFlagSet("split", flag.ExitOnError)
@@ -25,7 +28,6 @@ func main() {
 		os.Exit(1)
 	}
 	if os.Args[1] == "net" {
-		ipAddr, ipErr := TorrentNet.GetLocalIP()
 		if ipErr != nil {
 			panic(ipErr)
 		}
