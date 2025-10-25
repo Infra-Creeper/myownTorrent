@@ -8,7 +8,7 @@ import (
 
 // joins the pieces to create a new file from the pieces and save it as `saveAs`, gets filename from metadata if saveAs is empty string i.e. ""
 func JoinTorrentPieces(torrentfilename string, saveAs string) error {
-	metadata, err := scanTFile(torrentfilename)
+	metadata, err := ScanTFile(torrentfilename)
 	if err != nil {
 		fmt.Println("ERROR in reading metadata")
 		return err
@@ -38,7 +38,7 @@ func JoinTorrentPieces(torrentfilename string, saveAs string) error {
 	return nil
 }
 
-func scanTFile(filename string) (TFile, error) {
+func ScanTFile(filename string) (TFile, error) {
 	var tfile TFile
 
 	// Read file
