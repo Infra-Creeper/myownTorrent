@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"fmt"
 	"io"
@@ -143,7 +144,11 @@ func RequestFile(serverAddr, fileName, saveAs string) error {
 }
 
 // Server serves files from a directory
-func StartServer(port, shareDir string) {
+func StartServer(port, shareDir string, wg *sync.WaitGroup) {
+	if wg != nil {
+		defer wg.Done()
+	}
+
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
@@ -159,6 +164,7 @@ func StartServer(port, shareDir string) {
 			fmt.Println("Error accepting connection:", err)
 			continue
 		}
+		// Each request handled in its own goroutine
 		go handleRequest(conn, shareDir)
 	}
 }
@@ -238,4 +244,32 @@ func handleRequest(conn net.Conn, shareDir string) {
 	}
 
 	fmt.Printf("Sent file: %s (%d bytes)\n", requestedFile, sent)
+}
+
+// Peer mode: acts as both server and client
+func startPeer(port, shareDir string, downloads []string, peerAddr string) {
+	var wg sync.WaitGroup
+
+	// Start server in background
+	wg.Add(1)
+	go StartServer(port, shareDir, &wg)
+
+	// Give server time to start
+	fmt.Println("[PEER] Starting as server and client...")
+
+	// Download files concurrently
+	if len(downloads) > 0 && peerAddr != "" {
+		for _, fileName := range downloads {
+			wg.Add(1)
+			go func(fn string) {
+				defer wg.Done()
+				err := RequestFile(peerAddr, fn, fn)
+				if err != nil {
+					fmt.Printf("[PEER] Download error for %s: %v\n", fn, err)
+				}
+			}(fileName)
+		}
+	}
+
+	wg.Wait()
 }
