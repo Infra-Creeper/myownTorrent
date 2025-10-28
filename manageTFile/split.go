@@ -34,7 +34,7 @@ func CreateTorrent(fileName string) error {
 	metadata.Name = fileName
 	metadata.Origin = LocalAddr
 
-	dir, fileLoc := getFolderString(fileName)
+	dir, fileLoc := GetFolderString(fileName)
 
 	dirErr := os.Mkdir(dir, 0755)
 	if dirErr != nil {
@@ -85,7 +85,7 @@ func createMeta(tfile TFile) error {
 	if err != nil {
 		return fmt.Errorf("error encoding struct: %v", err)
 	}
-	var filename string = getTorrentFileName(tfile.Name)
+	var filename string = GetTorrentFileName(tfile.Name)
 
 	err = os.WriteFile(filename, data, 0644)
 	if err != nil {
