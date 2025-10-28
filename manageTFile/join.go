@@ -38,6 +38,7 @@ func JoinTorrentPieces(torrentfilename string, saveAs string) error {
 	return nil
 }
 
+// gets the TFile struct for the given torrent filename
 func ScanTFile(filename string) (TFile, error) {
 	var tfile TFile
 
