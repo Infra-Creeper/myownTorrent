@@ -82,7 +82,7 @@ func RequestFile(serverAddr, fileName, saveAs string) error {
 	headerBuf := make([]byte, 8)
 	_, err = io.ReadFull(conn, headerBuf)
 	if err != nil {
-		return fmt.Errorf("error reading response header: %v", err)
+		return fmt.Errorf("ERROR reading response header: %v", err)
 	}
 
 	header := string(headerBuf)
@@ -92,7 +92,7 @@ func RequestFile(serverAddr, fileName, saveAs string) error {
 		errLenBuf := make([]byte, 8)
 		_, err = io.ReadFull(conn, errLenBuf)
 		if err != nil {
-			return fmt.Errorf("error reading error message length: %v", err)
+			return fmt.Errorf("ERROR reading error message length: %v", err)
 		}
 		errLen, _ := strconv.ParseInt(strings.TrimSpace(string(errLenBuf)), 10, 64)
 
@@ -100,7 +100,7 @@ func RequestFile(serverAddr, fileName, saveAs string) error {
 		errMsgBuf := make([]byte, errLen)
 		_, err = io.ReadFull(conn, errMsgBuf)
 		if err != nil {
-			return fmt.Errorf("error reading error message: %v", err)
+			return fmt.Errorf("ERROR reading error message: %v", err)
 		}
 
 		return fmt.Errorf("server error: %s", string(errMsgBuf))
@@ -190,10 +190,23 @@ func handleRequest(conn net.Conn, shareDir string) {
 	}
 	requestedFile := string(fileNameBuf)
 
-	fmt.Printf("Request for file: %s\n", requestedFile)
+	fmt.Printf("[SERVER] Request for file: %s\n", requestedFile)
 
-	// Construct full path (prevent directory traversal)
-	filePath := filepath.Join(shareDir, filepath.Base(requestedFile))
+	// Construct full path and clean it to prevent directory traversal
+	// filepath.Clean removes .. and . elements
+	cleanPath := filepath.Clean(requestedFile)
+
+	// Prevent absolute paths and paths that go outside share directory
+	if filepath.IsAbs(cleanPath) || strings.HasPrefix(cleanPath, "..") {
+		conn.Write([]byte("ERROR___"))
+		errorMsg := "Invalid file path"
+		conn.Write([]byte(fmt.Sprintf("%08d", len(errorMsg))))
+		conn.Write([]byte(errorMsg))
+		fmt.Printf("[SERVER] Invalid path rejected: %s\n", requestedFile)
+		return
+	}
+
+	filePath := filepath.Join(shareDir, cleanPath)
 
 	// Check if file exists
 	file, err := os.Open(filePath)
@@ -203,7 +216,7 @@ func handleRequest(conn net.Conn, shareDir string) {
 		errorMsg := "File not found"
 		conn.Write([]byte(fmt.Sprintf("%08d", len(errorMsg))))
 		conn.Write([]byte(errorMsg))
-		fmt.Printf("File not found: %s\n", requestedFile)
+		fmt.Printf("[SERVER] File not found: %s\n", requestedFile)
 		return
 	}
 	defer file.Close()
@@ -236,40 +249,12 @@ func handleRequest(conn net.Conn, shareDir string) {
 			if err == io.EOF {
 				break
 			}
-			fmt.Println("Error reading file:", err)
+			fmt.Println("[SERVER] Error reading file:", err)
 			return
 		}
 		conn.Write(buf[:n])
 		sent += int64(n)
 	}
 
-	fmt.Printf("Sent file: %s (%d bytes)\n", requestedFile, sent)
-}
-
-// Peer mode: acts as both server and client
-func startPeer(port, shareDir string, downloads []string, peerAddr string) {
-	var wg sync.WaitGroup
-
-	// Start server in background
-	wg.Add(1)
-	go StartServer(port, shareDir, &wg)
-
-	// Give server time to start
-	fmt.Println("[PEER] Starting as server and client...")
-
-	// Download files concurrently
-	if len(downloads) > 0 && peerAddr != "" {
-		for _, fileName := range downloads {
-			wg.Add(1)
-			go func(fn string) {
-				defer wg.Done()
-				err := RequestFile(peerAddr, fn, fn)
-				if err != nil {
-					fmt.Printf("[PEER] Download error for %s: %v\n", fn, err)
-				}
-			}(fileName)
-		}
-	}
-
-	wg.Wait()
+	fmt.Printf("[SERVER] Sent file: %s (%d bytes)\n", requestedFile, sent)
 }
