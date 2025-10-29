@@ -144,12 +144,12 @@ func RequestFile(serverAddr, fileName, saveAs string) error {
 }
 
 // Server serves files from a directory
-func StartServer(port, shareDir string, wg *sync.WaitGroup) {
+func StartServer(ipAddr, port, shareDir string, wg *sync.WaitGroup) {
 	if wg != nil {
 		defer wg.Done()
 	}
 
-	listener, err := net.Listen("tcp", ":"+port)
+	listener, err := net.Listen("tcp", ipAddr+":"+port)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 		return
