@@ -12,10 +12,11 @@ import (
 )
 
 const (
-	ttl time.Duration = time.Duration(5 * time.Minute)
+	ttl      time.Duration = time.Duration(5 * time.Minute)
+	maxPeers int           = 6
 )
 
-func downloadAllPieces(torrentfilename string, node *dht.DHT) error {
+func downloadAllPieces(torrentfilename string, node *dht.DHT, ipAddr string) error {
 	metadata, Scanerr := manageTFile.ScanTFile(torrentfilename)
 	if Scanerr != nil {
 		return Scanerr
@@ -24,7 +25,8 @@ func downloadAllPieces(torrentfilename string, node *dht.DHT) error {
 	//var pieceError error
 	var i int = 0
 	var leastPopPiece int = i
-	for isAllTrue(downloadedPieces) {
+	var SeedsInLeastPop int = maxPeers + 1
+	for !isAllTrue(downloadedPieces) {
 		if i > metadata.Pieces {
 			i = 0
 			downloadedPieces[leastPopPiece] = true
@@ -34,6 +36,8 @@ func downloadAllPieces(torrentfilename string, node *dht.DHT) error {
 				eMsg := fmt.Sprintf("ERROR DOWNLOADING PIECE %d \n %v", leastPopPiece, downErr)
 				return errors.New(eMsg)
 			}
+			TorrentNet.PostSeed(node, metadata.Hashes[leastPopPiece], ipAddr, ttl)
+			SeedsInLeastPop = maxPeers + 1
 			continue
 		}
 		seeds, err := TorrentNet.GetSeeds(node, metadata.Hashes[i], 5*time.Second)
@@ -41,7 +45,7 @@ func downloadAllPieces(torrentfilename string, node *dht.DHT) error {
 			fmt.Println("Unable to get seeds info for piece", i)
 			downloadedPieces[i] = true
 		}
-		if !downloadedPieces[i] && len(seeds) < leastPopPiece {
+		if !downloadedPieces[i] && len(seeds) < SeedsInLeastPop {
 			leastPopPiece = i
 		}
 		i++
