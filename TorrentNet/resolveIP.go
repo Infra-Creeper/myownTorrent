@@ -122,7 +122,7 @@ func RequestFile(serverAddr, fileName, saveAs string) error {
 	// Create directory structure if saveAs contains a path
 	saveDir := filepath.Dir(saveAs)
 	if saveDir != "." && saveDir != "" {
-		err = os.MkdirAll(saveDir, 0755)
+		err = os.MkdirAll(saveDir, 0766)
 		if err != nil {
 			return fmt.Errorf("error creating directory: %v", err)
 		}
