@@ -82,7 +82,7 @@ func PostTorrentFile(d *dht.DHT, filename string, ipAddr string) error {
 	for i, hash := range metadata.Hashes {
 		Posterr := TorrentNet.PostSeed(d, hash, ipAddr, ttl)
 		if Posterr != nil {
-			return errors.New(fmt.Sprintf("ERROR POSTING %d HASH\n %v", i, Posterr))
+			return fmt.Errorf("ERROR POSTING %d HASH\n %v", i, Posterr)
 		}
 	}
 	return nil

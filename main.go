@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"log"
 	"myownTorrent/TorrentNet"
 	"myownTorrent/manageTFile"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/purehyperbole/dht"
@@ -53,7 +55,7 @@ func main() {
 		if *bootstrap != "" {
 			cfg.BootstrapAddresses = []string{*bootstrap}
 		}
-
+		reader := bufio.NewReader(os.Stdin)
 		node, err := dht.New(cfg)
 		if err != nil {
 			log.Fatal(err)
@@ -61,7 +63,32 @@ func main() {
 		log.Println("Node Started listenting at", ipAddr)
 
 		for {
+			fmt.Print("myownTorrent> ")
+			text, _ := reader.ReadString('\n')
+			text = strings.TrimSpace(text)
 
+			if text == "q" || text == "quit" {
+				log.Println("Exiting...")
+				break
+			}
+			if strings.HasPrefix(text, "get ") {
+				tfilename := strings.TrimPrefix(text, "get ")
+				allerr := downloadAllPieces(tfilename, node, *ipAddr)
+				if allerr != nil {
+					log.Println("ERROR DOWNLOADING", allerr)
+					continue
+				}
+				log.Println("All files Downloaded Successfully")
+			}
+			if strings.HasPrefix(text, "post ") {
+				tfilename := strings.TrimPrefix(text, "post ")
+				posterr := PostTorrentFile(node, tfilename, *ipAddr)
+				if posterr != nil {
+					log.Println("ERROR POSTING", posterr)
+					continue
+				}
+
+			}
 		}
 
 	} else if os.Args[1] == "join" {
