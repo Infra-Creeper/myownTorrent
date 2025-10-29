@@ -30,12 +30,12 @@ func main() {
 
 	//flags for bet subcommands
 	ipAddr := netCmd.String("ip", defaultIpAddr, "IP Address of this machine(optional)")
-	bootstrap := flag.String("b", "", "Bootstrap node address (e.g., 127.0.0.1:9000)")
-	port := flag.String("p", "9000", "port to start DHT node at")
+	bootstrap := netCmd.String("b", "", "Bootstrap node address (e.g., 127.0.0.1:9000)")
+	port := netCmd.String("p", "9000", "port to start DHT node at")
 
 	// Check if subcommand is provided
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: program <host|join|split> [options]")
+		fmt.Println("Usage: program <net|join|split> [options]")
 		os.Exit(1)
 	}
 	if os.Args[1] == "net" {
@@ -43,11 +43,11 @@ func main() {
 			panic(ipErr)
 		}
 		//fmt.Println("Hosting at", &ipAddr)
-		go TorrentNet.StartServer(*ipAddr, "8080", ".", nil)
+		//go TorrentNet.StartServer(*ipAddr, "8080", ".", nil)
 		storage := TorrentNet.NewCustomStorage()
 		cfg := &dht.Config{
 			ListenAddress: *ipAddr + ":" + *port,
-			Listeners:     4,
+			Listeners:     2,
 			Timeout:       time.Minute / 2,
 			Storage:       storage,
 		}
@@ -60,7 +60,14 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println("Node Started listenting at", ipAddr)
+		log.Println("Node Started listenting at", *ipAddr, "port", *port)
+		go func() {
+			ticker := time.NewTicker(10 * time.Second)
+			defer ticker.Stop()
+			for range ticker.C {
+				storage.PrintAll()
+			}
+		}()
 
 		for {
 			fmt.Print("myownTorrent> ")

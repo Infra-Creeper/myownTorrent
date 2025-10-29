@@ -27,7 +27,7 @@ func downloadAllPieces(torrentfilename string, node *dht.DHT, ipAddr string) err
 	var leastPopPiece int = i
 	var seedsInLeastPop int = maxPeers + 1
 	for !isAllTrue(downloadedPieces) {
-		if i > metadata.Pieces {
+		if i >= metadata.Pieces {
 			i = 0
 			downloadedPieces[leastPopPiece] = true
 			hash := metadata.Hashes[leastPopPiece]
@@ -37,6 +37,7 @@ func downloadAllPieces(torrentfilename string, node *dht.DHT, ipAddr string) err
 				return errors.New(eMsg)
 			}
 			TorrentNet.PostSeed(node, metadata.Hashes[leastPopPiece], ipAddr, ttl)
+			time.Sleep(5 * time.Second)
 			seedsInLeastPop = maxPeers + 1
 			continue
 		}
@@ -58,6 +59,10 @@ func downloadPiece(index int, hash string, filename string, node *dht.DHT) error
 	seeds, seedsErr := TorrentNet.GetSeeds(node, hash, 10*time.Second)
 	if seedsErr != nil {
 		return seedsErr
+	}
+	if len(seeds) == 0 {
+		fmt.Println("ERROR:No seeds found")
+		return errors.New("no seeds found")
 	}
 	seedIP := seeds[rand.IntN(len(seeds))]
 	pieceLoc := manageTFile.GetBinPieceFileName(filename, index)
