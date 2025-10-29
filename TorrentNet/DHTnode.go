@@ -3,6 +3,7 @@ package TorrentNet
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/purehyperbole/dht"
@@ -28,9 +29,10 @@ func GetSeeds(node *dht.DHT, hash string, timeout time.Duration) ([]string, erro
 				if lookupErr == nil {
 					lookupErr = err
 				}
-				return
+				//return err
+				fmt.Println("ERROR IN FINDING KEY", err)
 			}
-
+			fmt.Println("Found seed for", hash)
 			// Copy value before storing (DHT reuses buffers)
 			copied := make([]byte, len(value))
 			copy(copied, value)
@@ -60,5 +62,6 @@ func PostSeed(d *dht.DHT, hash string, ipAddr string, ttl time.Duration) error {
 			funcErr = errors.New("ERROR: Unable to store " + hash + "=" + ipAddr + "on DHT")
 		}
 	})
+	time.Sleep(100 * time.Millisecond)
 	return funcErr
 }

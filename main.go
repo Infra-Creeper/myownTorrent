@@ -8,6 +8,7 @@ import (
 	"myownTorrent/TorrentNet"
 	"myownTorrent/manageTFile"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -43,7 +44,7 @@ func main() {
 			panic(ipErr)
 		}
 		//fmt.Println("Hosting at", &ipAddr)
-		//go TorrentNet.StartServer(*ipAddr, "8080", ".", nil)
+		go TorrentNet.StartServer(*ipAddr, "8080", ".", nil)
 		storage := TorrentNet.NewCustomStorage()
 		cfg := &dht.Config{
 			ListenAddress: *ipAddr + ":" + *port,
@@ -55,20 +56,21 @@ func main() {
 		if *bootstrap != "" {
 			cfg.BootstrapAddresses = []string{*bootstrap}
 		}
-		reader := bufio.NewReader(os.Stdin)
 		node, err := dht.New(cfg)
 		if err != nil {
 			log.Fatal(err)
 		}
 		log.Println("Node Started listenting at", *ipAddr, "port", *port)
-		go func() {
-			ticker := time.NewTicker(10 * time.Second)
-			defer ticker.Stop()
-			for range ticker.C {
-				storage.PrintAll()
-			}
-		}()
 
+		// go func() {
+		// 	ticker := time.NewTicker(10 * time.Second)
+		// 	defer ticker.Stop()
+		// 	for range ticker.C {
+		// 		storage.PrintAll()
+		// 	}
+		// }()
+		downloadIP := ""
+		reader := bufio.NewReader(os.Stdin)
 		for {
 			fmt.Print("myownTorrent> ")
 			text, _ := reader.ReadString('\n')
@@ -95,6 +97,26 @@ func main() {
 					continue
 				}
 
+			}
+			if strings.HasPrefix(text, "download ") {
+				fileoptions := strings.Split(text, " ")
+				filename := fileoptions[1]
+				index, err := strconv.Atoi(fileoptions[2])
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				donwloadLoc := manageTFile.GetBinPieceFileName(filename, index)
+				Requesterr := TorrentNet.RequestFile(downloadIP+":8080", donwloadLoc, donwloadLoc)
+				if Requesterr != nil {
+					fmt.Println(Requesterr)
+				} else {
+					fmt.Println("Piece Downloaded sucessfully")
+				}
+			}
+			if strings.HasPrefix(text, "server ") {
+				downloadIP = strings.TrimPrefix(text, "server ")
+				fmt.Println("server IP set to", downloadIP)
 			}
 		}
 

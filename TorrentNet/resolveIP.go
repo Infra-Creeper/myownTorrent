@@ -76,13 +76,13 @@ func RequestFile(serverAddr, fileName, saveAs string) error {
 	// Send filename
 	conn.Write([]byte(fileName))
 
-	fmt.Printf("Requesting file: %s\n", fileName)
+	fmt.Printf("[CLIENT] Requesting file: %s\n", fileName)
 
 	// Read response header (8 bytes: SUCCESS_ or ERROR___)
 	headerBuf := make([]byte, 8)
 	_, err = io.ReadFull(conn, headerBuf)
 	if err != nil {
-		return fmt.Errorf("ERROR reading response header: %v", err)
+		return fmt.Errorf("error reading response header: %v", err)
 	}
 
 	header := string(headerBuf)
@@ -92,7 +92,7 @@ func RequestFile(serverAddr, fileName, saveAs string) error {
 		errLenBuf := make([]byte, 8)
 		_, err = io.ReadFull(conn, errLenBuf)
 		if err != nil {
-			return fmt.Errorf("ERROR reading error message length: %v", err)
+			return fmt.Errorf("error reading error message length: %v", err)
 		}
 		errLen, _ := strconv.ParseInt(strings.TrimSpace(string(errLenBuf)), 10, 64)
 
@@ -100,7 +100,7 @@ func RequestFile(serverAddr, fileName, saveAs string) error {
 		errMsgBuf := make([]byte, errLen)
 		_, err = io.ReadFull(conn, errMsgBuf)
 		if err != nil {
-			return fmt.Errorf("ERROR reading error message: %v", err)
+			return fmt.Errorf("error reading error message: %v", err)
 		}
 
 		return fmt.Errorf("server error: %s", string(errMsgBuf))
@@ -118,6 +118,17 @@ func RequestFile(serverAddr, fileName, saveAs string) error {
 	if saveAs == "" {
 		saveAs = fileName
 	}
+
+	// Create directory structure if saveAs contains a path
+	saveDir := filepath.Dir(saveAs)
+	if saveDir != "." && saveDir != "" {
+		err = os.MkdirAll(saveDir, 0755)
+		if err != nil {
+			return fmt.Errorf("error creating directory: %v", err)
+		}
+		fmt.Printf("[CLIENT] Created directory: %s\n", saveDir)
+	}
+
 	outFile, err := os.Create(saveAs)
 	if err != nil {
 		return fmt.Errorf("error creating file: %v", err)
@@ -139,7 +150,7 @@ func RequestFile(serverAddr, fileName, saveAs string) error {
 		received += int64(n)
 	}
 
-	fmt.Printf("Downloaded file: %s (%d bytes)\n", saveAs, received)
+	fmt.Printf("[CLIENT] Downloaded file: %s (%d bytes)\n", saveAs, received)
 	return nil
 }
 

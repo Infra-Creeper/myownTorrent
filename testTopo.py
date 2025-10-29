@@ -35,8 +35,6 @@ def singleSwitchTopo():
     net.start()
     
     info('*** Opening xterm for each host\n')
-    for i in range(NODES):
-        copy_and_replace("./torrent",f"./h{i+1}/torrent")
     for i,host in enumerate(net.hosts):
         dir_name = host.name
         if not os.path.exists(dir_name):
@@ -44,7 +42,10 @@ def singleSwitchTopo():
             info(f'Created directory: {dir_name}\n')
         
         # Open xterm in the host's directory
-        makeTerm(host, title=f'Host {host.name}', cmd=f'cd {dir_name}; bash')
+        #makeTerm(host, title=f'Host {host.name}')
+
+    for i in range(NODES):
+        copy_and_replace("./torrent",f"./h{i+1}/torrent")
     
     info('*** Running CLI\n')
     CLI(net)
