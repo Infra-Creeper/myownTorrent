@@ -118,6 +118,24 @@ func main() {
 				downloadIP = strings.TrimPrefix(text, "server ")
 				fmt.Println("server IP set to", downloadIP)
 			}
+			if strings.HasPrefix(text, "join ") {
+				options := strings.Fields(strings.TrimPrefix(text, "join "))
+				joinCmd.Parse(options)
+				err := manageTFile.JoinTorrentPieces(*tfile, *outfile)
+				if err != nil {
+					println("LOG: tfile=", *tfile, "outfile=", *outfile)
+					panic(err)
+				}
+			}
+			if strings.HasPrefix(text, "split ") {
+				options := strings.Fields(strings.TrimPrefix(text, "split "))
+				splitCmd.Parse(options)
+				err := manageTFile.CreateTorrent(*filename)
+				if err != nil {
+					println("LOG: filename=", *filename)
+					panic(err)
+				}
+			}
 		}
 
 	} else if os.Args[1] == "join" {
