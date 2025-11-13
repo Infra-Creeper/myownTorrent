@@ -106,7 +106,7 @@ func main() {
 				err := manageTFile.JoinTorrentPieces(*tfile, *outfile)
 				if err != nil {
 					println("LOG: tfile=", *tfile, "outfile=", *outfile)
-					panic(err)
+					println(err)
 				}
 			}
 			if strings.HasPrefix(text, "split ") {
@@ -115,7 +115,7 @@ func main() {
 				err := manageTFile.CreateTorrent(*filename)
 				if err != nil {
 					println("LOG: filename=", *filename)
-					panic(err)
+					println(err)
 				}
 			}
 		}

@@ -20,37 +20,11 @@ func downloadAllPieces(torrentfilename string, URL string, ipAddr string) error 
 	if Scanerr != nil {
 		return Scanerr
 	}
-	downloadedPieces := make([]bool, metadata.Pieces)
-	//var pieceError error
-	var i int = 0
-	var leastPopPiece int = i
-	var seedsInLeastPop int = maxPeers + 1
-	for !isAllTrue(downloadedPieces) {
-		if i >= metadata.Pieces {
-			i = 0
-			downloadedPieces[leastPopPiece] = true
-			hash := metadata.Hashes[leastPopPiece]
-			downErr := downloadPiece(i, hash, metadata.Name, URL)
-			if downErr != nil {
-				eMsg := fmt.Sprintf("ERROR DOWNLOADING PIECE %d \n %v", leastPopPiece, downErr)
-				return errors.New(eMsg)
-			}
-			TorrentNet.PostKeyValue(URL, hash, ipAddr)
-			time.Sleep(5 * time.Second)
-			seedsInLeastPop = maxPeers + 1
-			continue
-		}
-		seeds, err := TorrentNet.GetValues(URL, metadata.Hashes[i])
-		fmt.Println(seeds)
+	for i, hash := range metadata.Hashes {
+		err := downloadPiece(i, hash, metadata.Name, URL)
 		if err != nil {
-			fmt.Println("Unable to get seeds info for piece", i)
-			downloadedPieces[i] = true
+			fmt.Printf("ERROR DOWNLOADING PIECES %d\n", i)
 		}
-		if !downloadedPieces[i] && len(seeds) < seedsInLeastPop {
-			leastPopPiece = i
-			seedsInLeastPop = len(seeds)
-		}
-		i++
 	}
 	return nil
 }
