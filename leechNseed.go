@@ -7,8 +7,7 @@ import (
 	"myownTorrent/TorrentNet"
 	"myownTorrent/manageTFile"
 	"time"
-
-	"github.com/purehyperbole/dht"
+	//"github.com/purehyperbole/dht"
 )
 
 const (
@@ -16,7 +15,7 @@ const (
 	maxPeers int           = 6
 )
 
-func downloadAllPieces(torrentfilename string, node *dht.DHT, ipAddr string) error {
+func downloadAllPieces(torrentfilename string, URL string, ipAddr string) error {
 	metadata, Scanerr := manageTFile.ScanTFile(torrentfilename)
 	if Scanerr != nil {
 		return Scanerr
@@ -31,17 +30,18 @@ func downloadAllPieces(torrentfilename string, node *dht.DHT, ipAddr string) err
 			i = 0
 			downloadedPieces[leastPopPiece] = true
 			hash := metadata.Hashes[leastPopPiece]
-			downErr := downloadPiece(i, hash, metadata.Name, node)
+			downErr := downloadPiece(i, hash, metadata.Name, URL)
 			if downErr != nil {
 				eMsg := fmt.Sprintf("ERROR DOWNLOADING PIECE %d \n %v", leastPopPiece, downErr)
 				return errors.New(eMsg)
 			}
-			TorrentNet.PostSeed(node, metadata.Hashes[leastPopPiece], ipAddr, ttl)
+			TorrentNet.PostKeyValue(URL, hash, ipAddr)
 			time.Sleep(5 * time.Second)
 			seedsInLeastPop = maxPeers + 1
 			continue
 		}
-		seeds, err := TorrentNet.GetSeeds(node, metadata.Hashes[i], 5*time.Second)
+		seeds, err := TorrentNet.GetValues(URL, metadata.Hashes[i])
+		fmt.Println(seeds)
 		if err != nil {
 			fmt.Println("Unable to get seeds info for piece", i)
 			downloadedPieces[i] = true
@@ -55,8 +55,8 @@ func downloadAllPieces(torrentfilename string, node *dht.DHT, ipAddr string) err
 	return nil
 }
 
-func downloadPiece(index int, hash string, filename string, node *dht.DHT) error {
-	seeds, seedsErr := TorrentNet.GetSeeds(node, hash, 10*time.Second)
+func downloadPiece(index int, hash string, filename string, URL string) error {
+	seeds, seedsErr := TorrentNet.GetValues(URL, hash)
 	if seedsErr != nil {
 		return seedsErr
 	}
@@ -79,16 +79,17 @@ func isAllTrue(arr []bool) bool {
 	return true
 }
 
-func PostTorrentFile(d *dht.DHT, filename string, ipAddr string) error {
+func PostTorrentFile(URL string, filename string, ipAddr string) error {
 	metadata, metaerr := manageTFile.ScanTFile(filename)
 	if metaerr != nil {
 		return metaerr
 	}
 	for i, hash := range metadata.Hashes {
-		Posterr := TorrentNet.PostSeed(d, hash, ipAddr, ttl)
+		Posterr := TorrentNet.PostKeyValue(URL, hash, ipAddr+":8080")
 		if Posterr != nil {
 			return fmt.Errorf("ERROR POSTING %d HASH\n %v", i, Posterr)
 		}
+		fmt.Printf("Posted piece=%d hash=0x%s\n", i, hash)
 	}
 	return nil
 }

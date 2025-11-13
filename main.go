@@ -10,9 +10,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
-
-	"github.com/purehyperbole/dht"
 )
 
 func main() {
@@ -31,8 +28,8 @@ func main() {
 
 	//flags for bet subcommands
 	ipAddr := netCmd.String("ip", defaultIpAddr, "IP Address of this machine(optional)")
-	bootstrap := netCmd.String("b", "", "Bootstrap node address (e.g., 127.0.0.1:9000)")
-	port := netCmd.String("p", "9000", "port to start DHT node at")
+	bootstrap := netCmd.String("b", "http://10.0.0.1:8080", "Bootstrap node address (e.g., 127.0.0.1:9000)")
+	//port := netCmd.String("p", "9000", "port to start DHT node at")
 
 	// Check if subcommand is provided
 	if len(os.Args) < 2 {
@@ -45,22 +42,6 @@ func main() {
 		}
 		//fmt.Println("Hosting at", &ipAddr)
 		go TorrentNet.StartServer(*ipAddr, "8080", ".", nil)
-		storage := TorrentNet.NewCustomStorage()
-		cfg := &dht.Config{
-			ListenAddress: *ipAddr + ":" + *port,
-			Listeners:     2,
-			Timeout:       time.Minute / 2,
-			Storage:       storage,
-		}
-
-		if *bootstrap != "" {
-			cfg.BootstrapAddresses = []string{*bootstrap}
-		}
-		node, err := dht.New(cfg)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Println("Node Started listenting at", *ipAddr, "port", *port)
 
 		// go func() {
 		// 	ticker := time.NewTicker(10 * time.Second)
@@ -69,6 +50,7 @@ func main() {
 		// 		storage.PrintAll()
 		// 	}
 		// }()
+		var URL string = *bootstrap
 		downloadIP := ""
 		reader := bufio.NewReader(os.Stdin)
 		for {
@@ -82,7 +64,7 @@ func main() {
 			}
 			if strings.HasPrefix(text, "get ") {
 				tfilename := strings.TrimPrefix(text, "get ")
-				allerr := downloadAllPieces(tfilename, node, *ipAddr)
+				allerr := downloadAllPieces(tfilename, URL, *ipAddr)
 				if allerr != nil {
 					log.Println("ERROR DOWNLOADING", allerr)
 					continue
@@ -91,7 +73,7 @@ func main() {
 			}
 			if strings.HasPrefix(text, "post ") {
 				tfilename := strings.TrimPrefix(text, "post ")
-				posterr := PostTorrentFile(node, tfilename, *ipAddr)
+				posterr := PostTorrentFile(URL, tfilename, *ipAddr)
 				if posterr != nil {
 					log.Println("ERROR POSTING", posterr)
 					continue
@@ -107,7 +89,7 @@ func main() {
 					continue
 				}
 				donwloadLoc := manageTFile.GetBinPieceFileName(filename, index)
-				Requesterr := TorrentNet.RequestFile(downloadIP+":8080", donwloadLoc, donwloadLoc)
+				Requesterr := TorrentNet.RequestFile(downloadIP, donwloadLoc, donwloadLoc)
 				if Requesterr != nil {
 					fmt.Println(Requesterr)
 				} else {
